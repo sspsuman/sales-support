@@ -1,0 +1,114 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Superstore Analytics</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root{--bg:#f3f5fb;--card:#fff;--tx:#18202f;--mu:#6c7893;--bd:#e5e9f2;--p:#5b5bf0;--p2:#8b5cf6;--g:#10b981;--r:#ef4444;--o:#f59e0b;--sh:0 4px 20px rgba(40,50,90,.07)}
+body.dark{--bg:#0e121b;--card:#171d2a;--tx:#e9edf6;--mu:#8b97b3;--bd:#262f42;--sh:0 4px 20px rgba(0,0,0,.35)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.5 Inter,system-ui,-apple-system,"Segoe UI",sans-serif;transition:background .2s}
+header{background:linear-gradient(120deg,var(--p),var(--p2));color:#fff;padding:22px 24px 64px}
+.hd{max-width:1300px;margin:auto;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+h1{margin:0;font-size:24px}.hs{opacity:.85;font-size:13px}
+.hb button{background:rgba(255,255,255,.18);color:#fff;border:0;border-radius:10px;padding:8px 12px;cursor:pointer;font-size:13px;margin-left:6px}
+.wrap{max-width:1300px;margin:-46px auto 40px;padding:0 16px}
+.card{background:var(--card);border-radius:16px;box-shadow:var(--sh);padding:16px 18px;border:1px solid var(--bd);min-width:0}
+.filters{display:flex;flex-wrap:wrap;gap:12px;align-items:end;margin-bottom:16px}
+.f label{display:block;font-size:11px;font-weight:600;color:var(--mu);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+select,input[type=search]{background:var(--bg);color:var(--tx);border:1px solid var(--bd);border-radius:10px;padding:8px 10px;font:inherit;min-width:120px}
+.seg{display:inline-flex;background:var(--bg);border:1px solid var(--bd);border-radius:10px;padding:3px}
+.seg button{border:0;background:none;color:var(--mu);padding:5px 12px;border-radius:8px;cursor:pointer;font:inherit;font-weight:600}
+.seg button.on{background:linear-gradient(120deg,var(--p),var(--p2));color:#fff}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px}
+.kpi{display:flex;gap:12px;align-items:center}.ic{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font-size:20px;flex:none}
+.kv{font-size:21px;font-weight:700;line-height:1.1}.kl{font-size:12px;color:var(--mu)}
+.tabs{display:flex;gap:6px;margin:6px 0 14px;flex-wrap:wrap}
+.tabs button{border:1px solid var(--bd);background:var(--card);color:var(--tx);padding:9px 16px;border-radius:12px;cursor:pointer;font:inherit;font-weight:600}
+.tabs button.on{background:var(--p);border-color:var(--p);color:#fff}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:14px;margin-bottom:14px}
+h2{font-size:15px;margin:0 0 10px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.cv{height:280px;position:relative}.tw{overflow:auto;max-height:520px}
+table{width:100%;border-collapse:collapse;font-size:13px}th{position:sticky;top:0;background:var(--card);color:var(--mu);font-size:11px;text-transform:uppercase;text-align:right;padding:8px 6px}
+td{padding:9px 6px;border-top:1px solid var(--bd);text-align:right;white-space:nowrap}th:nth-child(-n+2),td:nth-child(-n+2){text-align:left}
+td.n{max-width:260px;overflow:hidden;text-overflow:ellipsis}.rk{color:var(--mu);width:28px}
+.pill{font-size:11px;padding:2px 8px;border-radius:20px;background:var(--bg);color:var(--mu)}
+.neg{color:var(--r)}.pos{color:var(--g)}.bg{display:inline-block;height:6px;border-radius:4px;background:linear-gradient(90deg,var(--p),var(--p2));vertical-align:middle;margin-left:8px}
+.ins{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin-bottom:14px}
+.in{padding:12px 14px;border-radius:12px;background:var(--bg);border-left:4px solid var(--p);font-size:13px}
+.btn{background:var(--p);color:#fff;border:0;border-radius:9px;padding:6px 12px;cursor:pointer;font:inherit;font-size:12px}
+.hide{display:none}.ld{opacity:.5;pointer-events:none}.er{color:var(--r);padding:20px}
+</style></head><body>
+<header><div class="hd"><div><h1>📊 Superstore Analytics</h1><div class="hs" id="hs">Loading from SQLite…</div></div>
+<div class="hb"><button id="th">🌙 Theme</button><button id="rs">↺ Reset</button></div></div></header>
+<div class="wrap">
+<div class="card filters" id="fl"></div>
+<div class="kpis" id="kp"></div>
+<div class="tabs" id="tb"></div>
+<div id="er" class="er hide"></div>
+<section id="s-overview"><div class="ins" id="ins"></div>
+<div class="grid"><div class="card"><h2 id="h-tr"></h2><div class="cv"><canvas id="c-tr"></canvas></div></div>
+<div class="card"><h2>Sales &amp; profit by category</h2><div class="cv"><canvas id="c-ca"></canvas></div></div></div>
+<div class="grid"><div class="card"><h2>Sales by market</h2><div class="cv"><canvas id="c-mk"></canvas></div></div>
+<div class="card"><h2>Sales by segment</h2><div class="cv"><canvas id="c-sg"></canvas></div></div></div></section>
+<section id="s-products" class="hide"><div class="grid"><div class="card"><h2 id="h-pc"></h2><div class="cv"><canvas id="c-pr"></canvas></div></div>
+<div class="card"><h2 id="h-pt"></h2><div class="tw" id="t-pr"></div></div></div>
+<div class="card"><h2>⚠️ Biggest loss-making products</h2><div class="tw" id="t-lo"></div></div></section>
+<section id="s-customers" class="hide"><div class="grid"><div class="card"><h2 id="h-cc"></h2><div class="cv"><canvas id="c-cu"></canvas></div></div>
+<div class="card"><h2 id="h-ct"></h2><div class="tw" id="t-cu"></div></div></div></section>
+<section id="s-inactive" class="hide"><div class="ins" id="ii"></div>
+<div class="card"><h2><span id="h-in"></span><button class="btn" id="dl">⬇ Download win-back list (CSV)</button></h2><div class="tw" id="t-in"></div></div></section>
+</div>
+<script>
+const $=i=>document.getElementById(i),S={year:'All',market:'All',category:'All',segment:'All',metric:'sales',n:10,days:90,sort:'v',search:''};
+const DEF={...S};let data=null,tab='overview',CH={};
+const fm=(v,m)=>{const a=Math.abs(v),s=a>=1e6?(a/1e6).toFixed(2)+'M':a>=1e4?(a/1e3).toFixed(1)+'K':Math.round(a).toLocaleString();return(v<0?'-':'')+(m==='quantity'?'':'$')+s};
+const E=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const sel=(k,l,o)=>`<div class="f"><label>${l}</label><select data-k="${k}">${o.map(x=>`<option ${String(S[k])===String(x[0])?'selected':''} value="${x[0]}">${x[1]}</option>`).join('')}</select></div>`;
+const A=a=>[['All','All'],...a.map(x=>[x,x])];
+async function init(){const m=await (await fetch('/api/meta')).json();
+ $('fl').innerHTML=sel('year','Year',A(m.year))+sel('market','Market',A(m.market))+sel('category','Category',A(m.category))+sel('segment','Segment',A(m.segment))+
+ `<div class="f"><label>Rank by</label><div class="seg" id="mt">${['sales','profit','quantity'].map(x=>`<button data-m="${x}" class="${S.metric===x?'on':''}">${x[0].toUpperCase()+x.slice(1)}</button>`).join('')}</div></div>`+
+ sel('n','Show top',[5,10,20,30].map(x=>[x,'Top '+x]))+sel('days','Inactive after',[30,60,90,180,365].map(x=>[x,x+' days']))+
+ `<div class="f"><label>Search</label><input type="search" id="se" placeholder="Product or customer…"></div>`;
+ $('fl').onchange=e=>{const k=e.target.dataset.k;if(!k)return;S[k]=e.target.value;load()};
+ $('mt').onclick=e=>{const b=e.target.closest('button');if(!b)return;S.metric=b.dataset.m;[...$('mt').children].forEach(x=>x.classList.toggle('on',x===b));load()};
+ let t;$('se').oninput=e=>{clearTimeout(t);t=setTimeout(()=>{S.search=e.target.value.trim();load()},350)};
+ $('tb').innerHTML=[['overview','🏠 Overview'],['products','🏆 Top products'],['customers','👥 Top customers'],['inactive','😴 Inactive customers']].map(([k,l])=>`<button data-t="${k}" class="${k===tab?'on':''}">${l}</button>`).join('');
+ $('tb').onclick=e=>{const b=e.target.closest('button');if(!b)return;tab=b.dataset.t;[...$('tb').children].forEach(x=>x.classList.toggle('on',x===b));['overview','products','customers','inactive'].forEach(k=>$('s-'+k).classList.toggle('hide',k!==tab));render()};
+ $('th').onclick=()=>{document.body.classList.toggle('dark');render()};
+ $('rs').onclick=()=>{Object.assign(S,DEF);init()};
+ load()}
+async function load(){document.querySelector('.wrap').classList.add('ld');const u=new URLSearchParams(S);
+ try{const r=await fetch('/api/dashboard?'+u);data=await r.json();if(data.error)throw data.error;$('er').classList.add('hide');render()}
+ catch(e){$('er').textContent='Could not load data: '+e;$('er').classList.remove('hide')}
+ document.querySelector('.wrap').classList.remove('ld')}
+function ch(id,cfg){if(CH[id])CH[id].destroy();const d=document.body.classList.contains('dark');Chart.defaults.color=d?'#8b97b3':'#6c7893';Chart.defaults.borderColor=d?'#262f42':'#e5e9f2';
+ cfg.options={responsive:true,maintainAspectRatio:false,animation:{duration:400},...cfg.options};CH[id]=new Chart($(id),cfg)}
+const tbl=(h,r)=>`<table><tr>${h.map(x=>`<th>${x}</th>`).join('')}</tr>${r.join('')||'<tr><td colspan=9>No results</td></tr>'}</table>`;
+const pc=v=>`<span class="${v<0?'neg':'pos'}">${fm(v)}</span>`;
+function render(){if(!data)return;const d=data,k=d.kpi,m=S.metric,M=m[0].toUpperCase()+m.slice(1);
+ $('hs').textContent=`Live from SQLite · data through ${d.max_date} · ${k.orders.toLocaleString()} orders`;
+ const mg=k.sales?k.profit/k.sales*100:0;
+ $('kp').innerHTML=[['💰','Sales',fm(k.sales),'#5b5bf022'],['📈','Profit',fm(k.profit),'#10b98122'],['🎯','Profit margin',mg.toFixed(1)+'%','#f59e0b22'],['🧾','Orders',k.orders.toLocaleString(),'#8b5cf622'],['🙋','Customers',k.customers.toLocaleString(),'#06b6d422'],['🛒','Avg order',fm(k.orders?k.sales/k.orders:0),'#ec489922'],['↩️','Return rate',(k.orders?k.returned/k.orders*100:0).toFixed(1)+'%','#ef444422']]
+  .map(([i,l,v,c])=>`<div class="card kpi"><div class="ic" style="background:${c}">${i}</div><div><div class="kv">${v}</div><div class="kl">${l}</div></div></div>`).join('');
+ if(tab==='overview'){const best=d.category.slice().sort((a,b)=>b.profit-a.profit)[0],mk=d.market[0],pk=d.trend.slice().sort((a,b)=>b.sales-a.sales)[0];
+  $('ins').innerHTML=[best&&`🏅 <b>${E(best.name)}</b> earns the most profit (${fm(best.profit)}, ${(best.profit/best.sales*100).toFixed(1)}% margin)`,mk&&`🌍 <b>${E(mk.name)}</b> is the biggest market — ${(mk.sales/k.sales*100).toFixed(0)}% of sales`,pk&&`📅 Best month: <b>${pk.name}</b> with ${fm(pk.sales)} in sales`,`😴 <b>${d.inactive_total}</b> of ${d.customer_total} customers inactive for ${S.days}+ days`].filter(Boolean).map(x=>`<div class="in">${x}</div>`).join('');
+  $('h-tr').textContent=M+' trend by month';
+  ch('c-tr',{type:'line',data:{labels:d.trend.map(x=>x.name),datasets:[{label:M,data:d.trend.map(x=>x[m]),borderColor:'#5b5bf0',backgroundColor:'rgba(91,91,240,.15)',fill:true,tension:.35,pointRadius:0}]},options:{plugins:{legend:{display:false}},scales:{x:{ticks:{maxTicksLimit:10}}}}});
+  const two=(id,a)=>ch(id,{type:'bar',data:{labels:a.map(x=>x.name),datasets:[{label:'Sales',data:a.map(x=>x.sales),backgroundColor:'#5b5bf0',borderRadius:6},{label:'Profit',data:a.map(x=>x.profit),backgroundColor:'#10b981',borderRadius:6}]}});
+  two('c-ca',d.category);two('c-mk',d.market);
+  ch('c-sg',{type:'doughnut',data:{labels:d.segment.map(x=>x.name),datasets:[{data:d.segment.map(x=>x.sales),backgroundColor:['#5b5bf0','#8b5cf6','#10b981'],borderWidth:0}]},options:{cutout:'62%'}})}
+ if(tab==='products'){const p=d.products,mx=Math.max(...p.map(x=>x[m]),1);$('h-pc').textContent=`Top ${S.n} products by ${m}`;$('h-pt').textContent='Product details';
+  ch('c-pr',{type:'bar',data:{labels:p.map(x=>x.name.slice(0,28)),datasets:[{data:p.map(x=>x[m]),backgroundColor:'#8b5cf6',borderRadius:6}]},options:{indexAxis:'y',plugins:{legend:{display:false}}}});
+  $('t-pr').innerHTML=tbl(['#','Product','Sales','Profit','Units'],p.map((x,i)=>`<tr><td class="rk">${i+1}</td><td class="n" title="${E(x.name)}">${E(x.name)}<br><span class="pill">${E(x.sub)}</span></td><td>${fm(x.sales)}</td><td>${pc(x.profit)}</td><td>${x.quantity}</td></tr>`));
+  $('t-lo').innerHTML=tbl(['#','Product','Sales','Profit'],d.losers.map((x,i)=>`<tr><td class="rk">${i+1}</td><td class="n">${E(x.name)} <span class="pill">${E(x.sub)}</span></td><td>${fm(x.sales)}</td><td>${pc(x.profit)}</td></tr>`))}
+ if(tab==='customers'){const c=d.customers,mx=Math.max(...c.map(x=>x[m]),1);$('h-cc').textContent=`Top ${S.n} customers by ${m}`;$('h-ct').textContent='Customer details';
+  ch('c-cu',{type:'bar',data:{labels:c.map(x=>x.name),datasets:[{data:c.map(x=>x[m]),backgroundColor:'#10b981',borderRadius:6}]},options:{indexAxis:'y',plugins:{legend:{display:false}}}});
+  $('t-cu').innerHTML=tbl(['#','Customer','Orders','Sales','Profit'],c.map((x,i)=>`<tr><td class="rk">${i+1}</td><td class="n">${E(x.name)}<br><span class="pill">${E(x.segment)}</span></td><td>${x.orders}</td><td>${fm(x.sales)}</td><td>${pc(x.profit)}</td></tr>`))}
+ if(tab==='inactive'){$('h-in').textContent=`${d.inactive_total} customers with no order in ${S.days}+ days`;
+  $('ii').innerHTML=`<div class="in">😴 <b>${d.inactive_total}</b> inactive of ${d.customer_total} customers (${d.customer_total?(d.inactive_total/d.customer_total*100).toFixed(0):0}%)</div><div class="in">💸 <b>${fm(d.inactive_value)}</b> lifetime sales sit with these customers — win-back potential</div><div class="in"><div class="seg" id="so"><button data-s="v" class="${S.sort==='v'?'on':''}">Highest value</button><button data-s="d" class="${S.sort==='d'?'on':''}">Longest inactive</button></div></div>`;
+  $('so').onclick=e=>{const b=e.target.closest('button');if(b){S.sort=b.dataset.s;load()}};
+  const mx=Math.max(...d.inactive.map(x=>x.lifetime),1);
+  $('t-in').innerHTML=tbl(['#','Customer','Last order','Days inactive','Orders','Lifetime sales'],d.inactive.map((x,i)=>`<tr><td class="rk">${i+1}</td><td class="n">${E(x.name)}<br><span class="pill">${E(x.segment)} · ${E(x.id)}</span></td><td>${x.last_order}</td><td>${x.days_inactive}</td><td>${x.orders}</td><td>${fm(x.lifetime)}<span class="bg" style="width:${x.lifetime/mx*60}px"></span></td></tr>`))}}
+$('dl').onclick=()=>{if(!data)return;const r=[['customer_id','name','segment','last_order','days_inactive','orders','lifetime_sales'],...data.inactive.map(x=>[x.id,x.name,x.segment,x.last_order,x.days_inactive,x.orders,x.lifetime.toFixed(2)])];
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([r.map(y=>y.map(v=>`"${v}"`).join(',')).join('\n')],{type:'text/csv'}));a.download='inactive_customers.csv';a.click()};
+init();
+</script></body></html>
