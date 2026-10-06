@@ -38,7 +38,7 @@ def dashboard(p):
         inactive=inactive[:200], inactive_total=len(inactive), inactive_value=sum(x["lifetime"] for x in inactive), customer_total=total_c)
 
 class H(SimpleHTTPRequestHandler):
-    def __init__(s, *a, **k): super().__init__(*a, directory=HERE, **k)
+    def __init__(s, *a, **k): super().__init__(*a, directory=os.path.join(HERE, "public"), **k)
     def do_GET(s):
         u = urlparse(s.path)
         if u.path.startswith("/api/"):

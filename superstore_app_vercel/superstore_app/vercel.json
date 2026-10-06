@@ -1,4 +1,8 @@
 {
+  "framework": null,
+  "buildCommand": "",
+  "installCommand": "",
+  "outputDirectory": "public",
   "functions": {
     "api/*.py": { "includeFiles": "{superstore.db,server.py}", "maxDuration": 30 }
   }

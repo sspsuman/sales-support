@@ -1,4 +1,7 @@
-Superstore Analytics (SQLite + Python + HTML)
-LOCAL:  python server.py  -> http://localhost:8000
-VERCEL: set Root Directory to superstore_app, Framework Preset "Other", deploy.
-Rebuild DB from Excel: pip install pandas openpyxl; python build_db.py yourfile.xlsx
+Superstore Analytics
+Structure (must be exactly like this, with vercel.json at the Vercel Root Directory):
+  public/index.html   frontend
+  api/*.py            serverless API
+  superstore.db, server.py, vercel.json
+LOCAL:  python server.py -> http://localhost:8000
+VERCEL: Root Directory = folder containing vercel.json, Framework Preset = Other.
