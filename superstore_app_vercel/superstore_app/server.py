@@ -3,6 +3,7 @@ import json, sqlite3, os
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 HERE = os.path.dirname(os.path.abspath(__file__)); DB = os.path.join(HERE, "superstore.db")
+def connect(): return sqlite3.connect(f"file:{DB}?mode=ro&immutable=1", uri=True)
 M = {"sales": "SUM(sales)", "profit": "SUM(profit)", "quantity": "SUM(quantity)"}
 
 def q(con, sql, a=()):
@@ -18,7 +19,7 @@ def where(p, year=True):
     return " AND ".join(w), a
 
 def dashboard(p):
-    con = sqlite3.connect(DB); m = p.get("metric", "sales"); m = m if m in M else "sales"
+    con = connect(); m = p.get("metric", "sales"); m = m if m in M else "sales"
     n = max(1, min(int(p.get("n", 10)), 50)); days = int(p.get("days", 90)); W, A = where(p); W2, A2 = where(p, False)
     mx = con.execute("select max(order_date) from sales").fetchone()[0]
     k = q(con, f"""select ifnull(sum(sales),0) sales, ifnull(sum(profit),0) profit, ifnull(sum(quantity),0) units,
@@ -44,7 +45,7 @@ class H(SimpleHTTPRequestHandler):
             p = {k: v[0] for k, v in parse_qs(u.query).items()}
             try:
                 if u.path == "/api/meta":
-                    con = sqlite3.connect(DB); d = {c: [r[0] for r in con.execute(f"select distinct {c} from sales order by 1")] for c in ("year", "market", "category", "segment")}
+                    con = connect(); d = {c: [r[0] for r in con.execute(f"select distinct {c} from sales order by 1")] for c in ("year", "market", "category", "segment")}
                 else: d = dashboard(p)
                 b = json.dumps(d).encode(); s.send_response(200)
             except Exception as e: b = json.dumps({"error": str(e)}).encode(); s.send_response(500)
